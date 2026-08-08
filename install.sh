@@ -13,8 +13,8 @@
 set -euo pipefail
 
 # ── Configurações ──────────────────────────────────────────────────────────────
-# Altere para o seu repositório GitHub público no formato "usuario/repositorio"
 GITHUB_REPO="${GITHUB_REPO:-"UlekBR/ztun"}"
+BRANCH="${BRANCH:-"main"}"
 
 INSTALL_DIR="/opt/ztun"
 BIN_LINK="/usr/local/bin/ztun-menu"
@@ -63,33 +63,32 @@ ok "Sistema: Linux ($ARCH)"
 # ── Verificação de Dependências (curl ou wget) ─────────────────────────────────
 DL_CMD=""
 if command -v curl >/dev/null 2>&1; then
-    DL_CMD="curl -sSL -o"
+    DL_CMD="curl -fsSL -o"
 elif command -v wget >/dev/null 2>&1; then
     DL_CMD="wget -q -O"
 else
     die "Nem 'curl' nem 'wget' foram encontrados. Instale um deles antes de prosseguir."
 fi
 
-# ── Obtenção da Última Tag / Release ──────────────────────────────────────────
-info "Buscando a última versão publicada no GitHub ($GITHUB_REPO)..."
-
-RELEASE_URL="https://github.com/${GITHUB_REPO}/releases/latest/download"
+# ── Obtenção dos Binários via Raw GitHub ──────────────────────────────────────
+RAW_BASE_URL="https://raw.githubusercontent.com/${GITHUB_REPO}/${BRANCH}/dist"
+info "Baixando binários compilados do repositório ($GITHUB_REPO)..."
 
 # ── Criação de Diretórios ─────────────────────────────────────────────────────
 mkdir -p "$INSTALL_DIR"
 
 # ── Download dos Binários ─────────────────────────────────────────────────────
-XHTTP_URL="${RELEASE_URL}/xhttp-${ARCH}"
-MENU_URL="${RELEASE_URL}/menu-${ARCH}"
+XHTTP_URL="${RAW_BASE_URL}/xhttp-${ARCH}"
+MENU_URL="${RAW_BASE_URL}/menu-${ARCH}"
 
-info "Baixando xhttp ($ARCH)..."
+info "Baixando xhttp-$ARCH de $XHTTP_URL..."
 if ! $DL_CMD "${INSTALL_DIR}/xhttp" "$XHTTP_URL"; then
-    die "Falha ao baixar xhttp de: $XHTTP_URL\nVerifique se a Release foi publicada no GitHub."
+    die "Falha ao baixar xhttp-$ARCH de: $XHTTP_URL\nCertifique-se de ter rodado ./build.sh e feito 'git push' da pasta dist/ no repositório GitHub."
 fi
 
-info "Baixando menu ($ARCH)..."
+info "Baixando menu-$ARCH de $MENU_URL..."
 if ! $DL_CMD "${INSTALL_DIR}/menu" "$MENU_URL"; then
-    die "Falha ao baixar menu de: $MENU_URL\nVerifique se a Release foi publicada no GitHub."
+    die "Falha ao baixar menu-$ARCH de: $MENU_URL\nCertifique-se de ter rodado ./build.sh e feito 'git push' da pasta dist/ no repositório GitHub."
 fi
 
 # ── Configuração de Permissões e Link Simbólico ────────────────────────────────
@@ -106,5 +105,5 @@ echo -e "${GRN}       Ztun instalado com sucesso em ${INSTALL_DIR}!       ${NC}"
 echo -e "${GRN}==============================================================${NC}"
 echo ""
 echo "Para iniciar e gerenciar o Ztun, digite simplesmente:"
-echo -e "  ${BLU}menu${NC}"
+echo -e "  ${BLU}ztun-menu${NC}"
 echo ""
