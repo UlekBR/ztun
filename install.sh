@@ -4,9 +4,9 @@
 # ==============================================================================
 #
 # Uso:
-#   curl -sSL https://raw.githubusercontent.com/SEU_USUARIO/SEU_REPO/main/install.sh | sudo bash
+#   curl -sSL https://raw.githubusercontent.com/UlekBR/ztun/main/install.sh | sudo bash
 #   ou:
-#   wget -qO- https://raw.githubusercontent.com/SEU_USUARIO/SEU_REPO/main/install.sh | sudo bash
+#   wget -qO- https://raw.githubusercontent.com/UlekBR/ztun/main/install.sh | sudo bash
 #
 # ==============================================================================
 
