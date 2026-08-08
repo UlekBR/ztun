@@ -4,9 +4,9 @@
 # ==============================================================================
 #
 # Uso:
-#   curl -sSL https://raw.githubusercontent.com/UlekBR/ztun/main/install.sh | sudo bash
+#   curl -sSL https://raw.githubusercontent.com/UlekBR/ztun/refs/heads/main/install.sh | sudo bash
 #   ou:
-#   wget -qO- https://raw.githubusercontent.com/UlekBR/ztun/main/install.sh | sudo bash
+#   wget -qO- https://raw.githubusercontent.com/UlekBR/ztun/refs/heads/main/install.sh | sudo bash
 #
 # ==============================================================================
 
@@ -71,7 +71,7 @@ else
 fi
 
 # ── Obtenção dos Binários via Raw GitHub ──────────────────────────────────────
-RAW_BASE_URL="https://raw.githubusercontent.com/${GITHUB_REPO}/${BRANCH}/dist"
+RAW_BASE_URL="https://raw.githubusercontent.com/${GITHUB_REPO}/refs/heads/${BRANCH}"
 info "Baixando binários compilados do repositório ($GITHUB_REPO)..."
 
 # ── Criação de Diretórios ─────────────────────────────────────────────────────
@@ -83,12 +83,12 @@ MENU_URL="${RAW_BASE_URL}/menu-${ARCH}"
 
 info "Baixando xhttp-$ARCH de $XHTTP_URL..."
 if ! $DL_CMD "${INSTALL_DIR}/xhttp" "$XHTTP_URL"; then
-    die "Falha ao baixar xhttp-$ARCH de: $XHTTP_URL\nCertifique-se de ter rodado ./build.sh e feito 'git push' da pasta dist/ no repositório GitHub."
+    die "Falha ao baixar xhttp-$ARCH de: $XHTTP_URL\nCertifique-se de que os arquivos xhttp-${ARCH} e menu-${ARCH} estão na raiz do repositório GitHub."
 fi
 
 info "Baixando menu-$ARCH de $MENU_URL..."
 if ! $DL_CMD "${INSTALL_DIR}/menu" "$MENU_URL"; then
-    die "Falha ao baixar menu-$ARCH de: $MENU_URL\nCertifique-se de ter rodado ./build.sh e feito 'git push' da pasta dist/ no repositório GitHub."
+    die "Falha ao baixar menu-$ARCH de: $MENU_URL\nCertifique-se de que os arquivos xhttp-${ARCH} e menu-${ARCH} estão na raiz do repositório GitHub."
 fi
 
 # ── Configuração de Permissões e Link Simbólico ────────────────────────────────
