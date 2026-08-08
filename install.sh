@@ -14,10 +14,10 @@ set -euo pipefail
 
 # ── Configurações ──────────────────────────────────────────────────────────────
 # Altere para o seu repositório GitHub público no formato "usuario/repositorio"
-GITHUB_REPO="${GITHUB_REPO:-"seu-usuario/ztun"}"
+GITHUB_REPO="${GITHUB_REPO:-"UlekBR/ztun"}"
 
 INSTALL_DIR="/opt/ztun"
-BIN_LINK="/usr/local/bin/menu"
+BIN_LINK="/usr/local/bin/ztun-menu"
 
 # ── Cores para output ─────────────────────────────────────────────────────────
 RED='\033[0;31m'
