@@ -82,14 +82,18 @@ XHTTP_URL="${RAW_BASE_URL}/xhttp-${ARCH}"
 MENU_URL="${RAW_BASE_URL}/menu-${ARCH}"
 
 info "Baixando xhttp-$ARCH de $XHTTP_URL..."
-if ! $DL_CMD "${INSTALL_DIR}/xhttp" "$XHTTP_URL"; then
+if ! $DL_CMD "${INSTALL_DIR}/xhttp.tmp" "$XHTTP_URL"; then
+    rm -f "${INSTALL_DIR}/xhttp.tmp"
     die "Falha ao baixar xhttp-$ARCH de: $XHTTP_URL\nCertifique-se de que os arquivos xhttp-${ARCH} e menu-${ARCH} estão na raiz do repositório GitHub."
 fi
+mv -f "${INSTALL_DIR}/xhttp.tmp" "${INSTALL_DIR}/xhttp"
 
 info "Baixando menu-$ARCH de $MENU_URL..."
-if ! $DL_CMD "${INSTALL_DIR}/menu" "$MENU_URL"; then
+if ! $DL_CMD "${INSTALL_DIR}/menu.tmp" "$MENU_URL"; then
+    rm -f "${INSTALL_DIR}/menu.tmp"
     die "Falha ao baixar menu-$ARCH de: $MENU_URL\nCertifique-se de que os arquivos xhttp-${ARCH} e menu-${ARCH} estão na raiz do repositório GitHub."
 fi
+mv -f "${INSTALL_DIR}/menu.tmp" "${INSTALL_DIR}/menu"
 
 # ── Configuração de Permissões e Link Simbólico ────────────────────────────────
 chmod +x "${INSTALL_DIR}/xhttp" "${INSTALL_DIR}/menu"
