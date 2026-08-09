@@ -60,6 +60,20 @@ esac
 
 ok "Sistema: Linux ($ARCH)"
 
+# ── Verificação de Instalação Existente / Atualização ───────────────────────
+IS_UPDATE=false
+WAS_RUNNING=false
+
+if [[ -f "${INSTALL_DIR}/xhttp" || -f "${INSTALL_DIR}/menu" ]]; then
+    IS_UPDATE=true
+    info "Instalação prévia / atualização do Ztun detectada em ${INSTALL_DIR}."
+fi
+
+if systemctl is-active --quiet ztun 2>/dev/null; then
+    WAS_RUNNING=true
+    info "O serviço 'ztun' está em execução no momento."
+fi
+
 # ── Verificação de Dependências (curl ou wget) ─────────────────────────────────
 DL_CMD=""
 if command -v curl >/dev/null 2>&1; then
@@ -101,6 +115,19 @@ ok "Permissões de execução aplicadas."
 
 ln -sf "${INSTALL_DIR}/menu" "$BIN_LINK"
 ok "Atalho criado em $BIN_LINK"
+
+# ── Reinício Automático do Serviço em Atualizações/Reinstalação ──────────────
+if $IS_UPDATE || $WAS_RUNNING; then
+    if systemctl list-unit-files ztun.service | grep -q ztun.service 2>/dev/null || [[ -f "/etc/systemd/system/ztun.service" ]]; then
+        info "Atualização/Reinstalação detectada. Reiniciando serviço 'ztun'..."
+        systemctl daemon-reload 2>/dev/null || true
+        if systemctl restart ztun 2>/dev/null; then
+            ok "Serviço 'ztun' reiniciado automaticamente com sucesso!"
+        else
+            warn "Não foi possível reiniciar o serviço 'ztun' automaticamente. Verifique com: systemctl status ztun"
+        fi
+    fi
+fi
 
 # ── Finalização ───────────────────────────────────────────────────────────────
 echo ""
