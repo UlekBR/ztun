@@ -63,10 +63,20 @@ ok "Sistema: Linux ($ARCH)"
 # ── Verificação de Instalação Existente / Atualização ───────────────────────
 IS_UPDATE=false
 WAS_RUNNING=false
+# Até a v0.0.2 o binário do serviço se chamava "xhttp"; foi renomeado para
+# "ztun" porque o mesmo processo agora atende HTTP/HTTPS e Binary, não só
+# HTTP. Detecta essa instalação antiga para migrar automaticamente abaixo.
+LEGACY_XHTTP_BIN="${INSTALL_DIR}/xhttp"
+MIGRATING_FROM_XHTTP=false
 
-if [[ -f "${INSTALL_DIR}/xhttp" || -f "${INSTALL_DIR}/menu" ]]; then
+if [[ -f "${INSTALL_DIR}/ztun" || -f "$LEGACY_XHTTP_BIN" || -f "${INSTALL_DIR}/menu" ]]; then
     IS_UPDATE=true
     info "Instalação prévia / atualização do Ztun detectada em ${INSTALL_DIR}."
+fi
+
+if [[ -f "$LEGACY_XHTTP_BIN" ]]; then
+    MIGRATING_FROM_XHTTP=true
+    info "Instalação antiga com o binário 'xhttp' detectada — será migrada para 'ztun'."
 fi
 
 if systemctl is-active --quiet ztun 2>/dev/null; then
@@ -92,29 +102,41 @@ info "Baixando binários compilados do repositório ($GITHUB_REPO)..."
 mkdir -p "$INSTALL_DIR"
 
 # ── Download dos Binários ─────────────────────────────────────────────────────
-XHTTP_URL="${RAW_BASE_URL}/xhttp-${ARCH}"
+ZTUN_URL="${RAW_BASE_URL}/ztun-${ARCH}"
 MENU_URL="${RAW_BASE_URL}/menu-${ARCH}"
 
-info "Baixando xhttp-$ARCH de $XHTTP_URL..."
-if ! $DL_CMD "${INSTALL_DIR}/xhttp.tmp" "$XHTTP_URL"; then
-    rm -f "${INSTALL_DIR}/xhttp.tmp"
-    die "Falha ao baixar xhttp-$ARCH de: $XHTTP_URL\nCertifique-se de que os arquivos xhttp-${ARCH} e menu-${ARCH} estão na raiz do repositório GitHub."
+info "Baixando ztun-$ARCH de $ZTUN_URL..."
+if ! $DL_CMD "${INSTALL_DIR}/ztun.tmp" "$ZTUN_URL"; then
+    rm -f "${INSTALL_DIR}/ztun.tmp"
+    die "Falha ao baixar ztun-$ARCH de: $ZTUN_URL\nCertifique-se de que os arquivos ztun-${ARCH} e menu-${ARCH} estão na raiz do repositório GitHub."
 fi
-mv -f "${INSTALL_DIR}/xhttp.tmp" "${INSTALL_DIR}/xhttp"
+mv -f "${INSTALL_DIR}/ztun.tmp" "${INSTALL_DIR}/ztun"
 
 info "Baixando menu-$ARCH de $MENU_URL..."
 if ! $DL_CMD "${INSTALL_DIR}/menu.tmp" "$MENU_URL"; then
     rm -f "${INSTALL_DIR}/menu.tmp"
-    die "Falha ao baixar menu-$ARCH de: $MENU_URL\nCertifique-se de que os arquivos xhttp-${ARCH} e menu-${ARCH} estão na raiz do repositório GitHub."
+    die "Falha ao baixar menu-$ARCH de: $MENU_URL\nCertifique-se de que os arquivos ztun-${ARCH} e menu-${ARCH} estão na raiz do repositório GitHub."
 fi
 mv -f "${INSTALL_DIR}/menu.tmp" "${INSTALL_DIR}/menu"
 
 # ── Configuração de Permissões e Link Simbólico ────────────────────────────────
-chmod +x "${INSTALL_DIR}/xhttp" "${INSTALL_DIR}/menu"
+chmod +x "${INSTALL_DIR}/ztun" "${INSTALL_DIR}/menu"
 ok "Permissões de execução aplicadas."
 
 ln -sf "${INSTALL_DIR}/menu" "$BIN_LINK"
 ok "Atalho criado em $BIN_LINK"
+
+# ── Migração de instalações antigas (binário "xhttp" → "ztun") ────────────────
+if $MIGRATING_FROM_XHTTP; then
+    SERVICE_FILE="/etc/systemd/system/ztun.service"
+    if [[ -f "$SERVICE_FILE" ]] && grep -q "ExecStart=.*/xhttp" "$SERVICE_FILE" 2>/dev/null; then
+        sed -i "s#ExecStart=.*/xhttp#ExecStart=${INSTALL_DIR}/ztun#" "$SERVICE_FILE"
+        systemctl daemon-reload 2>/dev/null || true
+        ok "Serviço systemd atualizado para usar o novo binário 'ztun'."
+    fi
+    rm -f "$LEGACY_XHTTP_BIN"
+    ok "Binário antigo 'xhttp' removido (substituído por 'ztun')."
+fi
 
 # ── Reinício Automático do Serviço em Atualizações/Reinstalação ──────────────
 if $IS_UPDATE || $WAS_RUNNING; then
